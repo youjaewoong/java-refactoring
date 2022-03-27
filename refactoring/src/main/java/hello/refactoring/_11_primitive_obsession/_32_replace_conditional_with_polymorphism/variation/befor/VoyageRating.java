@@ -1,12 +1,15 @@
-package hello.refactoring._11_primitive_obsession._32_replace_conditional_with_polymorphism.variation;
+package hello.refactoring._11_primitive_obsession._32_replace_conditional_with_polymorphism.variation.befor;
 
 import java.util.List;
 
+import hello.refactoring._11_primitive_obsession._32_replace_conditional_with_polymorphism.variation.Voyage;
+import hello.refactoring._11_primitive_obsession._32_replace_conditional_with_polymorphism.variation.VoyageHistory;
+
 public class VoyageRating {
 
-	protected Voyage voyage;
+    private Voyage voyage;
 
-	protected List<VoyageHistory> history;
+    private List<VoyageHistory> history;
 
     public VoyageRating(Voyage voyage, List<VoyageHistory> history) {
         this.voyage = voyage;
@@ -20,10 +23,11 @@ public class VoyageRating {
         return (vpf * 3 > (vr + chr * 2)) ? 'A' : 'B';
     }
 
-    protected int captainHistoryRisk() {
+    private int captainHistoryRisk() {
         int result = 1;
         if (this.history.size() < 5) result += 4;
         result += this.history.stream().filter(v -> v.profit() < 0).count();
+        if (this.voyage.zone().equals("china") && this.hasChinaHistory()) result -= 2;
         return Math.max(result, 0);
     }
 
@@ -35,20 +39,27 @@ public class VoyageRating {
         return Math.max(result, 0);
     }
 
-    protected int voyageProfitFactor() {
+    private int voyageProfitFactor() {
         int result = 2;
+
         if (this.voyage.zone().equals("china")) result += 1;
         if (this.voyage.zone().equals("east-indies")) result +=1 ;
-        result += voyageLengthFactor();
-		result += historyLengthFactor();
+        if (this.voyage.zone().equals("china") && this.hasChinaHistory()) {
+            result += 3;
+            if (this.history.size() > 10) result += 1;
+            if (this.voyage.length() > 12) result += 1;
+            if (this.voyage.length() > 18) result -= 1;
+        } else {
+            if (this.history.size() > 8) result +=1 ;
+            if (this.voyage.length() > 14) result -= 1;
+        }
+
         return result;
     }
 
-    protected int voyageLengthFactor() {
-        return (this.voyage.length() > 14) ? -1 : 0;
+    private boolean hasChinaHistory() {
+        return this.history.stream().anyMatch(v -> v.zone().equals("china"));
     }
 
-    protected int historyLengthFactor() {
-		return (this.history.size() > 8) ? 1 : 0;
-	}
+
 }
